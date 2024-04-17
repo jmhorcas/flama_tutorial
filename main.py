@@ -34,6 +34,45 @@ def test_main():
     # The root feature
     print(f'Root feature: {fm.root.name}')
 
+    # Obtain the children of a given feature
+    children = fm.root.get_children()
+    print(f'Children of the root feature {fm.root.name}: {[f.name for f in children]}')
+    feature = fm.get_feature_by_name('Topping')  # Obtain a feature from its name
+    children = feature.get_children()
+    print(f'Children of the feature {feature}: {[f.name for f in children]}')
+
+    # Obtain the parent of a feature (NOTE: the root feature has not parent)
+    parent = features[-1].get_parent()
+    print(f'Parent of {features[-1]}: {parent}')
+    print(f'Parent of the root feature {fm.root}: {fm.root.get_parent()}')
+
+    # Obtain all relations of a feature
+    feature = fm.get_feature_by_name('Pizza')  # Obtain a feature from its name
+    print(f'Relations of {feature}:')
+    for i, relation in enumerate(feature.get_relations(), 1):
+        print(f' |-Relation {i}: {relation} -> parent: {relation.parent.name}, children: {[f.name for f in relation.children]}, card_min: {relation.card_min}, card_max: {relation.card_max}')
+
+    # Obtain specific information for a relation
+    feature = fm.get_feature_by_name('Topping')  # Obtain a feature from its name
+    print(f'Relations of {feature}:')
+    for i, relation in enumerate(feature.get_relations(), 1):
+        print(f' |-Relation {i}: {relation} -> parent: {relation.parent.name}, children: {[f.name for f in relation.children]}, card_min: {relation.card_min}, card_max: {relation.card_max}')
+        if relation.is_mandatory():  # [1..1] and only one children
+            relation_type = 'MANDATORY'
+        elif relation.is_optional():  # [0..1] and only one children
+            relation_type = 'OPTIONAL'
+        if relation.is_or():  # [1..n] and two or more children
+            relation_type = 'OR'
+        elif relation.is_alternative():  # [1..1] and two or more children
+            relation_type = 'XOR'
+        elif relation.is_mutex():  # [0..1] and two or more children
+            relation_type = 'MUX'
+        elif relation.is_cardinal():  # [a..b] and two or more children
+            relation_type = 'CARDINAL'
+        print(f' |-Relation type: {relation_type}')
+        print(f' |-Is group?: {relation.is_group()}')
+
+
     # Obtain the mandatory features
     mandatory_features = [f for f in features if f.is_mandatory()]
     print(f'Mandatory features: {len(mandatory_features)} {[f.name for f in mandatory_features]}')
