@@ -12,7 +12,6 @@ app = flask.Flask(__name__,
                   static_url_path='/static')
 
 
-
 # Define routes and views
 @app.route('/')
 def index():
