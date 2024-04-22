@@ -1,0 +1,39 @@
+{% macro show_subtree(feature, deep) %}
+    {% for relation in feature.relations %}
+        {% if relation.type == 'MANDATORY' %}
+            {% for child in relation.children %}
+                | {% for i in range(deep) %} - {% endfor %}
+                OBLIGATORIO: {{child.name}}
+                {{ show_subtree(child, deep+1) }}
+            {% endfor %}
+        {% endif %}
+        <BR>
+        {% if relation.type == 'OPTIONAL' %}
+            {% for child in relation.children %}
+                | {% for i in range(deep) %} - {% endfor %}
+                OPCIONAL (CHECKBOX): {{child.name}}
+                {{ show_subtree(child, deep+1) }}
+            {% endfor %}
+        {% endif %}
+        <BR>
+        {% if relation.type == 'OR' %}
+            {% for child in relation.children %}
+                | {% for i in range(deep) %} - {% endfor %}
+                OR (CHECKBOX): {{child.name}}<br>
+                {{ show_subtree(child, deep+1) }}
+            {% endfor %}
+        {% endif %}
+        <BR>
+        {% if relation.type == 'XOR' %}
+        {% for child in relation.children %}
+            | {% for i in range(deep) %} - {% endfor %}
+            ALTERNATIVA (RADIOBUTTON): {{child.name}}<br>
+            {{ show_subtree(child, deep+1) }}
+        {% endfor %}
+    {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{{data.name}}
+<br>
+{{ show_subtree(data, 1) }}

@@ -1,0 +1,77 @@
+features
+	Ensalada {abstract}
+		mandatory
+			Bases {abstract}
+				[1..2]
+					MezclumBrotesTiernos
+					RuculaSelvatica
+					Canonigos
+			Ingredientes {abstract}
+				[1..4]
+					TomateEcologico
+					TomatesCherry
+					Pepino
+					ZanahoriaRallada
+					CebollaMorada
+					CebollaCaramelizada
+					Brocoli
+					Rabano
+					MaizDulce
+					Nueces
+					PasasMoscatel
+					Wakame
+					Edamame
+					Pera
+					ManzanaAcida
+					HuevoCocido
+					QuesoCurado
+					QuesoParmesano
+					MedallonQuesoCabra {precio_extra 0.50}
+					TrigoTierno
+					Aguacate {precio_extra 0.50}
+					Mango {precio_extra 0.50}
+			Proteinas {abstract}
+				alternative
+					Pollo
+					PolloTeriyaki
+					Tofu
+					AtunConserva
+					Heura {precio_extra 1.00}
+					PolloKimchei
+					TofuSriracha
+					PatoConfitado {precio_extra 1.00}
+					SalmonMarinadoPonzu {precio_extra 1.00}
+					AtunMarinadoSojaAceiteSesamo {precio_extra 1.00}
+			Salsas {abstract}
+				alternative
+					Vinagreta {abstract}
+						alternative
+							MielMostaza
+							Basica
+								mandatory
+									AOVE
+									Vinagre
+									Sal
+							MangoCurry
+							Balsamica
+					SalsaYogurt
+						mandatory
+							Hierbabuena
+					Mayonesa {abstract}
+						alternative
+							Mayocurry
+							MayonesaTeriyaki
+							MayonesaJaponesa
+					Teriyaki
+					Soja
+					EmulsionCilantro
+			ToqueFinal {abstract}
+				alternative
+					MixSesamos
+					MaizCrujiente
+					PipasCalabaza
+					CacahuetesTostados
+					Datiles
+					TomateSemiseco
+					ShichimiTogarashi
+					Furikake
