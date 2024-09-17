@@ -81,9 +81,10 @@ if __name__ == '__main__':
     valid = valid_config(elements, fm_model, sat_model)
     print(f'Valid? {valid}')
 
+    ## Diagnosis
     config = Configuration(elements={e: True for e in elements})
-    #config = complete_configuration(config, fm_model)
-    #config.set_full(True) 
+    config = complete_configuration(config, fm_model)
+    config.set_full(True) 
     satisfiable_op = PySATSatisfiableConfiguration()
     satisfiable_op.set_configuration(config)
     valid = satisfiable_op.execute(sat_model).get_result()
