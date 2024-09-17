@@ -15,7 +15,7 @@ app = flask.Flask(__name__,
 # Define routes and views
 @app.route('/')
 def index():
-    fm = UVLReader('../models/Galerna_ensalada_es.uvl').transform()
+    fm = UVLReader('../models/Pizzas.uvl').transform()
     map = utils.get_data_from_model(fm)
     return flask.render_template('index.html', data=map)
 
