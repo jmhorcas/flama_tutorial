@@ -2,15 +2,22 @@ from flamapy.metamodels.fm_metamodel.transformations import UVLReader
 
 from flamapy.metamodels.pysat_metamodel.transformations import FmToPysat
 from flamapy.metamodels.pysat_metamodel.operations import (
-    Glucose3Valid,
-    Glucose3ProductsNumber,
-    Glucose3Products,
-    Glucose3CoreFeatures,
-    Glucose3DeadFeatures,
-    Glucose3ValidProduct,
-    Glucose3ValidConfiguration
+    PySATSatisfiable,
+    PySATConfigurationsNumber,
+    PySATConfigurations,
+    PySATCoreFeatures,
+    PySATDeadFeatures,
+    PySATSatisfiableConfiguration
 )
-
+from flamapy.metamodels.bdd_metamodel.transformations import FmToBDD, PNGWriter
+from flamapy.metamodels.bdd_metamodel.operations import (
+    BDDConfigurationsNumber,
+    BDDSampling,
+    BDDCoreFeatures,
+    BDDDeadFeatures,
+    BDDProductDistribution,
+    BDDFeatureInclusionProbability
+)
 from flamapy.metamodels.configuration_metamodel.models import Configuration
 
 
@@ -42,8 +49,8 @@ def test_main():
     print(f'Children of the feature {feature}: {[f.name for f in children]}')
 
     # Obtain the parent of a feature (NOTE: the root feature has not parent)
-    parent = features[-1].get_parent()
-    print(f'Parent of {features[-1]}: {parent}')
+    parent = feature.get_parent()
+    print(f'Parent of {feature}: {parent}')
     print(f'Parent of the root feature {fm.root}: {fm.root.get_parent()}')
 
     # Obtain all relations of a feature
@@ -107,28 +114,32 @@ def test_main():
     # Analyze the feature model    
     ###############################################################################################
 
+    ###############################################################################################
+    # Working with SAT
+    ###############################################################################################
+
     # Transform the feature model to propositional logic (SAT model)
     sat_model = FmToPysat(fm).transform()
 
     # Check if the model is valid
-    valid = Glucose3Valid().execute(sat_model).get_result()
+    valid = PySATSatisfiable().execute(sat_model).get_result()
     print(f'Valid?: {valid}')
 
     # Number of products (configurations)
-    n_configurations = Glucose3ProductsNumber().execute(sat_model).get_result()
+    n_configurations = PySATConfigurationsNumber().execute(sat_model).get_result()
     print(f'#Configurations: {n_configurations}')
 
     # List all products (configurations)
-    configurations = Glucose3Products().execute(sat_model).get_result()
+    configurations = PySATConfigurations().execute(sat_model).get_result()
     for i, config in enumerate(configurations, 1):
         print(f'{i}: {config}')
 
     # Obtain the core features (those features that are present in all configurations)
-    core_features = Glucose3CoreFeatures().execute(sat_model).get_result()
+    core_features = PySATCoreFeatures().execute(sat_model).get_result()
     print(f'Core features: {core_features}')
 
     # Obtain the dead features (those features that are not present in any configuration)
-    dead_features = Glucose3DeadFeatures().execute(sat_model).get_result()
+    dead_features = PySATDeadFeatures().execute(sat_model).get_result()
     print(f'Dead features: {dead_features}')
 
     ###############################################################################################
@@ -137,21 +148,58 @@ def test_main():
 
     # Create a valid configuration, but an invalid product because there is no any Size selected ('Normal' nor 'Big')
     elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size']  
-    features = {fm.get_feature_by_name(e): True for e in elements}
+    features = {e: True for e in elements}
     my_config = Configuration(features)
-    print(f'My configuration: {[f.name for f in my_config.get_selected_elements()]}')
+    print(f'My configuration: {[f for f in my_config.get_selected_elements()]}')
 
     # Check if the configuration is valid
-    valid_config_operation = Glucose3ValidConfiguration()
+    valid_config_operation = PySATSatisfiableConfiguration()
     valid_config_operation.set_configuration(my_config)
     valid_config = valid_config_operation.execute(sat_model).get_result()
     print(f'Valid config?: {valid_config}')
 
     # Check if the configuration is a valid product (that is, if the configuration is completed)
-    valid_product_operation = Glucose3ValidProduct()
+    valid_product_operation = PySATSatisfiableConfiguration()
+    my_config.set_full(True)  # Mark the configuration as completed
     valid_product_operation.set_configuration(my_config)
     valid_product = valid_product_operation.execute(sat_model).get_result()
     print(f'Valid product?: {valid_product}')
+
+
+    ###############################################################################################
+    # Working with BDD
+    ###############################################################################################
+
+     # Create the BDD from the FM
+    bdd_model = FmToBDD(fm).transform()
+
+    # # Save the BDD as a .png
+    PNGWriter(bdd_model.root.var + '.png', bdd_model).transform()
+
+    # BDD number of products
+    nof_products = BDDConfigurationsNumber().execute(bdd_model).get_result()
+    print(f'#Products: {nof_products}')
+
+   # BDD Sampling
+    sampling_op = BDDSampling()
+    sampling_op.set_sample_size(5)
+    sampling_op.set_with_replacement(False)
+    sample = sampling_op.execute(bdd_model).get_result()
+    print('Uniform Random Sampling:')
+    for i, prod in enumerate(sample):
+        print(f'Product {i}: {[feat for feat in prod.elements if prod.elements[feat]]}')
+
+    # BDD product distribution
+    dist = BDDProductDistribution().execute(bdd_model).get_result()
+    print(f'Product Distribution: {dist}')
+
+    assert sum(dist) == nof_products
+
+    # BDD feature inclusion probabilities
+    prob = BDDFeatureInclusionProbability().execute(bdd_model).get_result()
+    print('Feature Inclusion Probabilities:')
+    for feat in prob.keys():
+        print(f'{feat}: {prob[feat]}')
 
 
 if __name__ == '__main__':
